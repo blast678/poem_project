@@ -1,5 +1,6 @@
 // dbOperations.js - Database CRUD Operations
 const pool = require('./db');
+const PasswordUtils = require("./passwordUtils.js");
 
 class DatabaseOperations {
 
@@ -58,11 +59,12 @@ class DatabaseOperations {
         }
     }
     // User Operations
-    static async createUser(username, followers = 0, ratings = 0) {
+    static async createUser(username, password,followers = 0, ratings = 0) {
         try {
+            const hashedPassword = await PasswordUtils.hashPassword(password);
             const [result] = await pool.execute(
-                'INSERT INTO User (username, followers, ratings) VALUES (?, ?, ?)',
-                [username, followers, ratings]
+                'INSERT INTO User (username,password, followers, ratings) VALUES (?, ?, ?,?)',
+                [username,hashedPassword, followers, ratings]
             );
             return result;
         } catch (error) {
@@ -164,40 +166,21 @@ class DatabaseOperations {
     }
 
     static async getPosts() {
-        try {
-            const rows = await pool.execute('SELECT * FROM Posts');
-            return rows;
-        } catch (error) {
-            console.error('Error fetching posts:', error);
-            throw error;
-        }
+    try {
+        const [rows] = await pool.execute('SELECT * FROM Posts ORDER BY created_at DESC');
+        return rows;
+    } catch (error) {
+        console.error('Error fetching posts:', error);
+        throw error;
     }
+}
+
 
     // Comment Operations
 
     // Authentication Operations
-    static async authenticateUser(username) {
-        try {
-            const [rows] = await pool.execute(
-                'SELECT * FROM User WHERE username = ?', 
-                [username]
-            );
-            return rows.length > 0;
-        } catch (error) {
-            console.error('Authentication error:', error);
-            throw error;
-        }
-    }
+    
 
-    static async getPosts() {
-        try {
-            const [rows] = await pool.execute('SELECT * FROM Posts ORDER BY created_at DESC');
-            return rows;
-        } catch (error) {
-            console.error('Error fetching posts:', error);
-            throw error;
-        }
-    }
 }
 
 module.exports = DatabaseOperations;

@@ -13,6 +13,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Authentication Routes
+
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
     
@@ -33,6 +34,7 @@ app.post('/login', async (req, res) => {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
     }
+    
 });
 
 app.post('/signup', async (req, res) => {
